@@ -1,0 +1,20 @@
+*******************************************************
+Author  : Ahmed Elazab
+Email   : ahmed.elazab@yahoo.com / ahmed@siat.ac.cn
+Article : Ahmed Elazab et. al. "Segmentation of Brain Tissues from Magnetic
+          Resonance Images Using Adaptively Regularized Kernel-Based Fuzzy
+          C-Means Clustering"
+Journal : Computational and Mathematical Methods in Medicine, 2015
+******************************************************
+
+This demo includes the following files:
+
+ARKFCM.m:      The ARKFCM algorithm main function
+PixWgt.m:      The function that calculates the weight for each pixel based
+               on the local variation coefficient
+distARKFCM.m:  The function that calculates the distance between cluster
+               centers and the pixels using GRBF Kernel
+gaussKernel.m: The function that calculates the Gaussian RBF kernel used as distance metric
+kerWidth.m:    The function that calculates the kernel base (sigma) for GRBF Kernel Function
+demo.m:        The demo that runs the main function with different images
+noise.mat:     Different MR images corrupted with different level of noises
