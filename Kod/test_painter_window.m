@@ -43,7 +43,7 @@ else
 end
 % End initialization code - DO NOT EDIT
 
-
+global event_lock
 % --- Executes just before test_painter_window is made visible.
 function test_painter_window_OpeningFcn(hObject, eventdata, handles, varargin)
 % This function has no output args, see OutputFcn.
@@ -70,6 +70,7 @@ function varargout = test_painter_window_OutputFcn(hObject, eventdata, handles)
 % handles    structure with handles and user data (see GUIDATA)
 
 % Get default command line output from handles structure
+
 varargout{1} = handles.output;
 
 function image_axes_CreateFcn(hObject, eventdata, handles)
@@ -80,14 +81,17 @@ img = img - min(img(:));
 img = img / max(img(:));
 img = repmat(img, 1, 1, 3);
 imshow(img,[]);
-set(get(hObject,'Children'),'ButtonDownFcn',@paint_it_red)
+set(gcf,'WindowButtonMotionFcn',@paint_it_red)
+child = get(hObject,'Children');
+set(child, 'ButtonDownFcn', @start_painting)
+set(gcf, 'WindowButtonUpFcn', @stop_painting)
 
 r = 5;
 n = 4;
 SE = strel('disk',r,n);
 ball = SE.Neighborhood;
 
-hObject.UserData = struct('img', img, 'ball', ball);
+hObject.UserData = struct('img', img, 'ball', ball, 'mask', false(size(img(:,:,1))));
 
 handles.image_axes = gca;
 guidata(gca, handles);
@@ -135,40 +139,27 @@ function tools_grp_SelectionChangedFcn(hObject, eventdata, handles)
 selected = eventdata.NewValue.String;
 switch(selected)
     case 'Marker'
-        set(get(handles.image_axes,'Children'),'ButtonDownFcn',@paint_it_red)
+        set(gcf,'WindowButtonMotionFcn',@paint_it_red)
     case 'Eraser'
-        set(get(handles.image_axes,'Children'),'ButtonDownFcn',@erase)
+        set(gcf,'WindowButtonMotionFcn',@erase)
 end
 
+function start_painting(img_handle, event_data)
+    global event_lock;
+    event_lock = 1;
 
-function paint_it_red(img_handle, event_data )
+function stop_painting(img_handle, event_data)
+    global event_lock;
+    event_lock = 0;
+
+function paint_it_red(fig_handle, event_data)
+global event_lock;
+
+if(event_lock)
+event_lock = 0;
 % PAINTING FUNCTION
-img = img_handle.CData;
-cords = round(event_data.IntersectionPoint);
-cords(end) = [];
-
-parent = get(img_handle, 'Parent');
-ball = parent.UserData.ball;
-s = size(ball);
-rows = s(1);
-columns = s(2);
-
-first_row = cords(1) - ceil(rows/2) - 1;
-first_col = cords(2) - ceil(columns/2) - 1;
-
-last_row = first_row + rows - 1;
-last_col = first_col + columns - 1;
-
-max_val = max(img(:));
-ball = ball * max_val;
-% change pixels value
-img(first_col:last_col, first_row:last_row, 1) = img(first_col:last_col, first_row:last_row, 1) + ball;
-img(img > 1) = 1;
-
-img_handle.CData = img;
-
-function erase(img_handle, event_data )
-% PAINTING FUNCTION
+handles = get(fig_handle, 'Children');
+img_handle = get(handles(3), 'Children');
 img = img_handle.CData;
 cords = round(event_data.IntersectionPoint);
 cords(end) = [];
@@ -179,22 +170,85 @@ s = size(ball);
 rows_count = s(1);
 columns_count = s(2);
 
-[columns, rows] = find(ball);
-columns = columns - floor(columns_count/2) + cords(2);
-rows = rows - floor(rows_count/2) + cords(1);
+    if(all(cords <= size(img(:,:,1)) - size(ball)/2))
+        
+        
 
-first_row = cords(1) - floor(rows_count/2);
-first_col = cords(2) - floor(columns_count/2);
+        first_row = cords(1) - floor(rows_count/2);
+        first_col = cords(2) - floor(columns_count/2);
+        
+        last_row = first_row + rows_count - 1;
+        last_col = first_col + columns_count - 1;
+        
+        rows = first_row:last_row;
+        cols = first_col:last_col;
+        
+        mask = false(size(img(:,:,1)));
+        mask(cols, rows) = ball(1:rows_count, 1:columns_count);
+        bin_img = parent.UserData.mask;
+        bin_img = bin_img | mask;
+        parent.UserData.mask = bin_img;
 
-last_row = first_row + rows_count - 1;
-last_col = first_col + columns_count - 1;
+        % change pixels value
+        img(:,:, 1) = img(:,:, 1) + mask;
+        img(img > 1) = 1;
 
-max_val = max(img(:));
-ball = ball * max_val;
-% change red channel, to green channel which isn't ever modified
-img(columns, rows, 1) = img(columns, rows, 2);
+        img_handle.CData = img;
+        event_lock = 1;
+    end
+end
 
-img_handle.CData = img;
+function erase(fig_handle, event_data )
+% ERASING FUNCTION
+global event_lock;
+
+if(event_lock)
+event_lock = 0;
+% PAINTING FUNCTION
+handles = get(fig_handle, 'Children');
+img_handle = get(handles(3), 'Children');
+img = img_handle.CData;
+cords = round(event_data.IntersectionPoint);
+cords(end) = [];
+
+parent = get(img_handle, 'Parent');
+ball = parent.UserData.ball;
+s = size(ball);
+rows_count = s(1);
+columns_count = s(2);
+
+    if(all(cords <= size(img(:,:,1)) - size(ball)/2))
+        
+        
+
+        first_row = cords(1) - floor(rows_count/2);
+        first_col = cords(2) - floor(columns_count/2);
+        
+        last_row = first_row + rows_count - 1;
+        last_col = first_col + columns_count - 1;
+        
+        rows = first_row:last_row;
+        cols = first_col:last_col;
+        
+        mask = false(size(img(:,:,1)));
+        mask(cols, rows) = ball(1:rows_count, 1:columns_count);
+        bin_img = parent.UserData.mask;
+        bin_img = bin_img & ~mask;
+        parent.UserData.mask = bin_img;
+
+        % change pixels value
+        img(:,:, 1) = img(:,:, 1) - mask;
+        indexes = img(:,:,1) <= 0;
+        img_red = img(:,:,1);
+        img_green = img(:,:,2);
+        img_red(indexes) = img_green(indexes);
+        img(:,:,1) = img_red;
+
+        img_handle.CData = img;
+        event_lock = 1;
+    end
+end
+
 
 function ball = initialize_ball(r, n)
 SE = strel('disk',r,n);
