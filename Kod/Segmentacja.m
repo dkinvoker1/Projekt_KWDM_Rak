@@ -60,24 +60,24 @@ hold on
 %pierwsza nerka
 nerka=map==1;
 M = max(nerka,[],1);
-x1= find(M==1, 1, 'first');
-x2 = find(M==1, 1, 'last');
+nerka_x1= find(M==1, 1, 'first');
+nerka_x2 = find(M==1, 1, 'last');
 
 M = max(nerka,[],2);
-y1= find(M==1, 1, 'first');
-y2 = find(M==1, 1, 'last');
+nerka_y1= find(M==1, 1, 'first');
+nerka_y2 = find(M==1, 1, 'last');
 
-rectangle('Position',[x1 y1 x2-x1 y2-y1],'EdgeColor','r')
+rectangle('Position',[nerka_x1 nerka_y1 nerka_x2-nerka_x1 nerka_y2-nerka_y1],'EdgeColor','r')
 %druga nerka
 nerka=map==2;
 M = max(nerka,[],1);
-x1= find(M==1, 1, 'first');
-x2 = find(M==1, 1, 'last');
+nerka2_x1= find(M==1, 1, 'first');
+nerka2_x2 = find(M==1, 1, 'last');
 
 M = max(nerka,[],2);
-y1= find(M==1, 1, 'first');
-y2 = find(M==1, 1, 'last');
-rectangle('Position',[x1 y1 x2-x1 y2-y1],'EdgeColor','g')
+nerka2_y1= find(M==1, 1, 'first');
+nerka2_y2 = find(M==1, 1, 'last');
+rectangle('Position',[nerka2_x1 nerka2_y1 nerka2_x2-nerka2_x1 nerka2_y2-nerka2_y1],'EdgeColor','g')
 
 
 end
