@@ -55,30 +55,14 @@ while ~isequal(oldMap,map)
     end
     imshow(map,[])
 end
-% imshow(map,[])
+
+% M = max(map,[],1);
+[row,col] = find(M==1, 1, 'first');
+[row,col] = find(M==1, 1, 'last');
+% M = max(map,[],2);
+[row,col] = find(M, 1, 'first');
+[row,col] = find(M, 1, 'last');
 hold on
-%pierwsza nerka
-nerka=map==1;
-M = max(nerka,[],1);
-x1= find(M==1, 1, 'first');
-x2 = find(M==1, 1, 'last');
-
-M = max(nerka,[],2);
-y1= find(M==1, 1, 'first');
-y2 = find(M==1, 1, 'last');
-
 rectangle('Position',[x1 y1 x2-x1 y2-y1],'EdgeColor','r')
-%druga nerka
-nerka=map==2;
-M = max(nerka,[],1);
-x1= find(M==1, 1, 'first');
-x2 = find(M==1, 1, 'last');
-
-M = max(nerka,[],2);
-y1= find(M==1, 1, 'first');
-y2 = find(M==1, 1, 'last');
-rectangle('Position',[x1 y1 x2-x1 y2-y1],'EdgeColor','g')
-
-
 end
 
