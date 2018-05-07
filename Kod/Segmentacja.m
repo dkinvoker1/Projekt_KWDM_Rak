@@ -30,6 +30,18 @@ imagNew = reshape(fcmImage,M,N);
 figure;imshow(imagNew,[]); 
 %figure;imshow(I,[]);
 
+% wybór jednej grupy z fcma i wyzerowanie pozosta³ych etykiet
+[y,x] = ginput(1);
+group=imagNew(int16(x(1)),int16(y(1)))
+% czyszczenie obiektów ma³ych
+BW=imagNew;
+BW(BW~=group)=0;
+BW2 = bwareaopen(BW,300);
+% metoda ramkowania jeœli to siê rozrasta
+% najwiêcej sensu ma grupowanie po 3D
+% bwlabel lub bwlabeln do wyodrêbnienia obiektów
+
+%%
 [y,x] = ginput(2);
 group=imagNew(int16(x(1)),int16(y(1)))
 
@@ -53,9 +65,9 @@ while ~isequal(oldMap,map)
             end
         end
     end
-    imshow(map,[])
+%     imshow(map,[])
 end
-% imshow(map,[])
+imshow(map,[])
 hold on
 %pierwsza nerka
 nerka=map==1;
