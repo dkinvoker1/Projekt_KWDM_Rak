@@ -87,7 +87,7 @@ set(child, 'ButtonDownFcn', @start_painting)
 set(gcf, 'WindowButtonUpFcn', @stop_painting)
 
 r = 5;
-n = 4;
+n = 0;
 SE = strel('disk',r,n);
 ball = SE.Neighborhood;
 
@@ -101,7 +101,7 @@ guidata(gca, handles);
 
 % --- Executes during object creation, after setting all properties.
 function small_pointer_CreateFcn(hObject, eventdata, handles)
-ball = initialize_ball(4,4);
+ball = initialize_ball(4,0);
 img = initialize_pointer_image(ball);
 axes(hObject)
 imshow(img,[])
@@ -110,7 +110,7 @@ hObject.UserData = ball;
 
 % --- Executes during object creation, after setting all properties.
 function medium_pointer_CreateFcn(hObject, eventdata, handles)
-ball = initialize_ball(10,4);
+ball = initialize_ball(10,0);
 img = initialize_pointer_image(ball);
 axes(hObject)
 imshow(img,[])
@@ -120,7 +120,7 @@ hObject.UserData = ball;
 % --- Executes during object creation, after setting all properties.
 function big_pointer_CreateFcn(hObject, eventdata, handles)
 
-ball = initialize_ball(20,4);
+ball = initialize_ball(20,0);
 img = initialize_pointer_image(ball);
 axes(hObject)
 imshow(img,[]);
@@ -251,6 +251,7 @@ end
 
 
 function ball = initialize_ball(r, n)
+n=0;
 SE = strel('disk',r,n);
 ball = SE.Neighborhood;
 

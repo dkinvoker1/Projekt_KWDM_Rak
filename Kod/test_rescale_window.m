@@ -93,7 +93,7 @@ global img;
 cords = e.IntersectionPoint;
 cords(end) = [];
 axes(k.UserData);
-max_val =  max(img(:) * cords(2)/200)
-min_val =  min(img(:)) * cords(1)/200
+max_val =  max(img(:) * cords(2)/200);
+min_val =  min(img(:) * cords(1)/200);
 rescaled = rescale_intensity(img,min_val, max_val);
-imshow(rescaled,[])
+imshow(rescaled, [])
