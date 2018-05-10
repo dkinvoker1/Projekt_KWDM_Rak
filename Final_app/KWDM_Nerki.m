@@ -102,7 +102,7 @@ end
 % --- Executes on selection change in lb_series.
 function lb_series_Callback(hObject, eventdata, handles)
 global dcmaet dcmaec peer port
-global patients studies series images info
+global patients studies series images info spatial
 
 global previous_series 
 
@@ -519,7 +519,10 @@ function btn_segmentation_Callback(hObject, eventdata, handles)
 % handles    structure with handles and user data (see GUIDATA)
 global images index_selected masks
 map = Segmentacja(double(images(:,:,1,index_selected)));
-masks{index_selected} = map; 
+if isempty(masks{index_selected})
+    masks{index_selected} = zeros(size(images,1), size(images,2));
+end
+masks{index_selected} = masks{index_selected} | map; 
 
 show_image(index_selected, handles);
 
@@ -644,3 +647,32 @@ function btn_clear_Callback(hObject, eventdata, handles)
 global masks index_selected
 masks{index_selected} = zeros(size(masks{index_selected}));
 show_image(index_selected, handles);
+
+
+% --- Executes on button press in btn_save_results.
+function btn_save_results_Callback(hObject, eventdata, handles)
+% hObject    handle to btn_save_results (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+global masks info spatial series
+
+path = 'Results\';
+
+series_index = length(series) + 1;
+
+info.SeriesInstanceUID = [sprintf('Maska_%03d_', series_index) info.SeriesInstanceUID];
+for i = 1:length(masks)
+    info.SliceLocation =  spatial.PatientPositions(i, 3);
+    info.ImagePositionPatient(3) =  spatial.PatientPositions(i, 3);
+    
+    cur_mask = zeros(info.Rows, info.Columns);
+    if ~isnan(masks{i})
+        cur_mask = masks{i};
+    end
+    dicomwrite(cur_mask, [path 'mask' num2str(i)], info);
+end
+
+global dcmaet dcmaec peer port
+send_mask(dcmaet, dcmaec, peer, port);
+
+lb_studies_Callback(handles.lb_studies, eventdata, handles)

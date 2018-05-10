@@ -60,7 +60,7 @@ guidata(hObject, handles);
 
 % UIWAIT makes Object_browser wait for user response (see UIRESUME)
 % uiwait(handles.figure1);
-global objects_vol mask_index 
+global objects_vol mask_index index_selected
 mask_index = 1;
 
 image_in_series = size(objects_vol{mask_index},3);
@@ -69,7 +69,7 @@ handles.slider_slice.Min = 1;
 handles.slider_slice.Max = image_in_series;
 handles.slider_slice.SliderStep = [1/(image_in_series-1), 0.1];
 
-handles.slider_slice.Value = 1;
+handles.slider_slice.Value = index_selected;
 
 masks_string = cell(1, length(objects_vol));
 for i = 1:length(objects_vol)
@@ -78,7 +78,7 @@ end
 
 handles.pop_object.String = masks_string;
 
-show_mask(1, handles);
+show_mask(index_selected, handles);
 
 
 % --- Outputs from this function are returned to the command line.

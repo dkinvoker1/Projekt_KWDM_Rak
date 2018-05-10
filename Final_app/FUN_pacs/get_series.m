@@ -1,4 +1,4 @@
-function [series_list] = get_series(dcmaet, dcmaec, peer, port, patient_id, study_uid)
+function [series_list] = get_series(dcmaet, dcmaec, peer, port, patient_id, study_uid);
 series_cmd = ['findscu -aet ' dcmaet ' -aec ' dcmaec  ' --study  -k 0008,0052=SERIES -k 0010,0020="'...
                 patient_id '" -k 0020,000D="' study_uid '" -k 0020,000E -v '  peer ' ' port];
            
