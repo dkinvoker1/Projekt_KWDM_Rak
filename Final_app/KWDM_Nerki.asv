@@ -203,10 +203,16 @@ global images masks
 
 I = images(:,:,1,index);
 
+image_show = im2double(I);
+image_show = mat2gray(image_show);
+
+I_max = double(max(I(:)));
+I_min = double(min(I(:)));
+
 wl = handles.slider_WL.Value;
 ww = handles.slider_WW.Value;
 
-image_show = image_adjust(I, wl, ww);
+image_show = image
 
 if (~isempty(masks)) && (~isempty(masks{index}))
     image_show = setmask(image_show, masks{index});
@@ -215,6 +221,30 @@ handles.axes_image;
 imshow(image_show, []);
 
 handles.txt_img.String = index;
+
+
+function I = image_adjust(image, wl, ww)
+w_min = wl - ww/2;
+w_max = wl + ww/2;
+
+norm_min =  (w_min - I_min)/(I_max - I_min);
+norm_max =  (w_max - I_min)/(I_max - I_min);
+
+if norm_min < 0
+    norm_min = 0;
+end
+if norm_max > 1
+    norm_max = 1;
+end
+
+if norm_max == 1 && norm_min == 1
+    norm_min = 0.99;
+end
+if norm_max == 0 && norm_min == 0
+    norm_max = 0.01;
+end
+
+
 
 
 %% MW POMIAR ODLEG£OŒCI
@@ -658,10 +688,7 @@ function btn_active_conturs_Callback(hObject, eventdata, handles)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 global images masks index_selected
-wl = handles.slider_WL.Value;
-ww = handles.slider_WW.Value;
-
-new_mask = Iterative_activecontour(images, wl, ww, masks, index_selected);
+new_mask = Iterative_activecontour(images, masks, index_selected);
 
 for i = 1:length(masks)
    if ~isempty(masks{i})
