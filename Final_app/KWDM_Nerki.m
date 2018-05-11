@@ -671,4 +671,3 @@ for i = 1:length(masks)
    end
 end
 show_image(index_selected, handles);
-
