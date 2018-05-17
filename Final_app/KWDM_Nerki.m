@@ -31,12 +31,22 @@ guidata(hObject, handles);
 % uiwait(handles.figure1);
 initialize();
 
-global dcmaet dcmaec peer port
-dcmaet = 'KLIENTL';
-dcmaec = 'ARCHIWUM';
-peer = '127.0.0.1';
-port = '10110';
-
+global dcmaet dcmaec peer port pacs_config
+load config.mat
+pacs_config = config;
+if ~isempty(config)
+    config_list = [pacs_config{:}];
+    config_list = {config_list.Name};
+    handles.pop_pacs.String = config_list;
+    handles.pop_pacs.Value = 1;
+    
+    dcmaet = pacs_config{1}.AET;
+    dcmaec = pacs_config{1}.AEC;
+    peer = pacs_config{1}.Peer;
+    port = pacs_config{1}.Port;
+else
+    handles.pop_pacs.String = '';
+end
 
 
 % --- Outputs from this function are returned to the command line.
@@ -89,7 +99,37 @@ series = get_series(dcmaet, dcmaec, peer, port, patient.PatientId, study.StudyUI
 series_list = [series{:}];
 series_list = {series_list.SeriesUID};
 
+new_series = {};
+global masks_list
+masks_list = {};
+
+ser_id = 1;
+mas_id = 1;
+for i = 1:length(series_list)
+   if strcmp(series_list{i}(1:5), 'Maska')
+       masks_list{mas_id} = series{i};
+       mas_id = mas_id + 1;
+   else
+       new_series{ser_id} = series{i};
+       ser_id = ser_id + 1;
+   end
+end
+
+series = new_series;
+
+series_list = [series{:}];
+series_list = {series_list.SeriesUID};
+
 handles.lb_series.String = series_list;
+
+if ~isempty(masks_list)
+    mas_list = [masks_list{:}];
+    mas_list = {mas_list.SeriesUID};
+
+    handles.lb_masks.String = mas_list;
+else
+	handles.lb_masks.String = '';
+end
 
 
 % --- Executes during object creation, after setting all properties.
@@ -170,9 +210,15 @@ end
 
 % --- Executes on button press in btn_patients.
 function btn_patients_Callback(hObject, eventdata, handles)
-global dcmaet dcmaec peer port
-global patients 
+global dcmaet dcmaec peer port pacs_config conf_index
+global patients
 clear_images();
+
+conf_index = handles.pop_pacs.Value;
+dcmaet = pacs_config{conf_index}.AET;
+dcmaec = pacs_config{conf_index}.AEC;
+peer = pacs_config{conf_index}.Peer;
+port = pacs_config{conf_index}.Port;
 
 patients = get_patients(dcmaet, dcmaec, peer, port);
 patients_list = [patients{:}];
@@ -671,3 +717,140 @@ for i = 1:length(masks)
    end
 end
 show_image(index_selected, handles);
+
+
+% --- Executes on selection change in lb_masks.
+function lb_masks_Callback(hObject, eventdata, handles)
+% hObject    handle to lb_masks (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hints: contents = cellstr(get(hObject,'String')) returns lb_masks contents as cell array
+%        contents{get(hObject,'Value')} returns selected item from lb_masks
+global dcmaet dcmaec peer port 
+global patients studies masks_list masks index_selected
+ 
+index_selected = handles.lb_patients.Value;
+patient = patients{index_selected};
+patient_id = patient.PatientId;
+
+index_selected = handles.lb_studies.Value;
+study = studies{index_selected};
+study_uid = study.StudyUID;
+
+index_selected = handles.lb_series.Value;
+serie = masks_list{index_selected};
+series_uid = serie.SeriesUID;
+
+
+clear_masks();
+
+[info, masks_4D, spatial] = get_masks(dcmaet, dcmaec, peer, port, patient_id, study_uid, series_uid);
+
+masks = {};
+for i = 1:size(masks_4D, 4)
+    masks{i} = double(masks_4D(:,:,1,i));
+end
+
+value = round(handles.slider_series.Value);
+handles.slider_series.Value = value;
+
+index_selected = value;
+
+%% show image
+axes(handles.axes_image);
+show_image(index_selected, handles);
+
+
+
+
+% --- Executes during object creation, after setting all properties.
+function lb_masks_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to lb_masks (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: listbox controls usually have a white background on Windows.
+%       See ISPC and COMPUTER.
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end
+
+
+% --- Executes on selection change in pop_pacs.
+function pop_pacs_Callback(hObject, eventdata, handles)
+% hObject    handle to pop_pacs (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hints: contents = cellstr(get(hObject,'String')) returns pop_pacs contents as cell array
+%        contents{get(hObject,'Value')} returns selected item from pop_pacs
+global dcmaet dcmaec peer port
+global conf_index pacs_config
+conf_index = hObject.Value;
+    
+dcmaet = pacs_config{conf_index}.AET;
+dcmaec = pacs_config{conf_index}.AEC;
+peer = pacs_config{conf_index}.Peer;
+port = pacs_config{conf_index}.Port;
+
+
+% --- Executes during object creation, after setting all properties.
+function pop_pacs_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to pop_pacs (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: popupmenu controls usually have a white background on Windows.
+%       See ISPC and COMPUTER.
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end
+
+
+% --- Executes on button press in btn_add.
+function btn_add_Callback(hObject, eventdata, handles)
+% hObject    handle to btn_add (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+global edition conf_index popup
+edition = false;
+conf_index = handles.pop_pacs.Value;
+popup = handles.pop_pacs;
+PACS_confif();
+
+
+% --- Executes on button press in btn_delete.
+function btn_delete_Callback(hObject, eventdata, handles)
+% hObject    handle to btn_delete (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+global pacs_config
+conf_index = handles.pop_pacs.Value;
+new_conf = {};
+ind = 1;
+for i = 1:length(pacs_config)
+   if i ~= conf_index
+       new_conf{ind} = pacs_config{ind};
+       ind = ind + 1;
+   end
+end
+pacs_config = new_conf;
+config_list = [pacs_config{:}];
+config_list = {config_list.Name};
+handles.pop_pacs.Value = 1;
+handles.pop_pacs.String = config_list;
+config = pacs_config;
+save('config.mat', 'config');
+
+
+% --- Executes on button press in btn_edit.
+function btn_edit_Callback(hObject, eventdata, handles)
+% hObject    handle to btn_edit (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+global edition conf_index popup
+edition = true;
+conf_index = handles.pop_pacs.Value;
+popup = handles.pop_pacs;
+PACS_confif();
