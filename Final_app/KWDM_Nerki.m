@@ -57,7 +57,7 @@ varargout{1} = handles.output;
 % --- Executes on selection change in lb_patients.
 function lb_patients_Callback(hObject, eventdata, handles)
 global dcmaet dcmaec peer port
-global patients studies
+global patients studies masks_list series
 clear_images();
 
 index_selected = get(hObject,'Value');
@@ -68,6 +68,9 @@ studies_list = [studies{:}];
 studies_list = {studies_list.StudyUID};
 
 handles.lb_studies.String = studies_list;
+handles.lb_series.String=[];
+series=[];
+masks_list=[];
 
 
 % --- Executes during object creation, after setting all properties.
@@ -211,7 +214,7 @@ end
 % --- Executes on button press in btn_patients.
 function btn_patients_Callback(hObject, eventdata, handles)
 global dcmaet dcmaec peer port pacs_config conf_index
-global patients
+global patients studies series masks_list
 clear_images();
 
 conf_index = handles.pop_pacs.Value;
@@ -224,7 +227,14 @@ patients = get_patients(dcmaet, dcmaec, peer, port);
 patients_list = [patients{:}];
 names_list = {patients_list.PatientName};
 
+set(handles.lb_patients,'Value',1); 
 handles.lb_patients.String = names_list;
+
+handles.lb_studies.String=[];
+handles.lb_series.String=[];
+studies=[];
+series=[];
+masks_list=[];
 
 % --- Executes on slider movement.
 function slider_series_Callback(hObject, eventdata, handles)
