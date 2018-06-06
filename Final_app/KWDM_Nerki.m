@@ -31,6 +31,9 @@ guidata(hObject, handles);
 % uiwait(handles.figure1);
 initialize();
 
+dcmtkpath = [cd '\FUN_pacs\dcmtk\'];
+setenv('PATH', [getenv('PATH') ';' dcmtkpath]);
+
 global dcmaet dcmaec peer port pacs_config
 load config.mat
 pacs_config = config;
@@ -337,7 +340,7 @@ selected = eventdata.NewValue.String;
 switch(selected)
     case 'Marker'
         set(gcf,'WindowButtonMotionFcn',@paint_it_red)
-    case 'Eraser'
+    case 'Gumka'
         set(gcf,'WindowButtonMotionFcn',@erase)
 end
 
@@ -382,7 +385,7 @@ selected = handles.tools_grp.SelectedObject.String;
 switch(selected)
     case 'Marker'
         set(gcf,'WindowButtonMotionFcn',@paint_it_red)
-    case 'Eraser'
+    case 'Gumka'
         set(gcf,'WindowButtonMotionFcn',@erase)
 end
 
@@ -393,9 +396,8 @@ if ~isempty(masks{index_selected})
     old_mask = masks{index_selected};
 end
     
-handles.image_axes.UserData = struct('img', images(:,:,1,index_selected), 'ball', ball, 'mask', old_mask);
-
 handles.image_axes = gca;
+handles.image_axes.UserData = struct('img', images(:,:,1,index_selected), 'ball', ball, 'mask', old_mask);
 guidata(gca, handles);
 
 
