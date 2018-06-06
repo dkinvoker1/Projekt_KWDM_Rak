@@ -1,0 +1,3 @@
+1. Utworzenie instancji serwera PACS poprzez uruchomienie pliku PACS.bat z katalogu "PACS baza".
+1.1 Przed pierwszym korzystaniem z programu, po utworzeniu bazy uruchomić plik "Add_data.bat" - rozpocznie się proces przesyłania obrazów na serwer
+2. Uruchomienie aplikacji przez otwarcie skryptu "Final_app\KWDM_Nerki.m" w programie MATLAB
